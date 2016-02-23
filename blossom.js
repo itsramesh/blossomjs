@@ -153,5 +153,5 @@ window.blossom = function () {
         }
     };
 
-    return Blossom;
+    return blossom;
 }();
