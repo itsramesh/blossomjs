@@ -83,6 +83,14 @@ window.blossom = function () {
         });
     };
 
+    Blossom.prototype.hasClass = function (clasz) {
+        var returnVal;
+        this.each(function (element) {
+            returnVal = !(element.className.search(clasz) === -1);
+        });
+        return returnVal;
+    };
+
     Blossom.prototype.attr = function (attr, val) {
         if (typeof  val !== "undefined") {
             return this.each(function (element) {
@@ -93,6 +101,35 @@ window.blossom = function () {
                 return element.getAttribute(attr);
             });
         }
+    };
+
+    Blossom.prototype.scrollTo = function (duration) {
+        var bodyElement = document.body, to;
+
+        this.each(function (element) {
+            to = element.offsetTop;
+        });
+
+        function scrollFunction (to, duration) {
+            if (duration < 0) return;
+            var difference = to - bodyElement.scrollTop;
+            var perTick = difference / duration * 10;
+            var scrollTop = bodyElement.scrollTop;
+            if (difference >= 0) {
+                setTimeout(function () {
+                    bodyElement.scrollTop = scrollTop + perTick;
+                    if (bodyElement.scrollTop === to) return;
+                    scrollFunction(to, duration - 10);
+                }, 10);
+            } else {
+                setTimeout(function () {
+                    bodyElement.scrollTop = scrollTop + perTick;
+                    if (bodyElement.scrollTop <= to) return;
+                    scrollFunction(to, duration - 10);
+                }, 10)
+            }
+        }
+        scrollFunction(to, duration);
     };
 
     Blossom.prototype.append = function (elements) {
@@ -119,6 +156,50 @@ window.blossom = function () {
             return element.parentNode.removeChild(element);
         });
     };
+
+    Blossom.prototype.on = (function () {
+        if (document.addEventListener) {
+            return function (event, fn) {
+                return this.each(function (element) {
+                    element.addEventListener(event, fn, false);
+                });
+            };
+        } else if (document.attachEvent) {
+            return function (event, fn) {
+                return this.each(function (element) {
+                    element.attachEvent('on' + event, fn);
+                });
+            };
+        } else {
+            return function (event, fn) {
+                return this.each(function (element) {
+                    element['on' + event] = fn;
+                });
+            };
+        }
+    })();
+
+    Blossom.prototype.off = (function () {
+        if (document.removeEventListener) {
+            return function (event, fn) {
+                return this.each(function (element) {
+                    element.removeEventListener(event, fn, false);
+                });
+            };
+        } else if (document.detachEvent) {
+            return function (event, fn) {
+                return this.each(function (element) {
+                    element.detachEvent('on' + event, fn);
+                });
+            };
+        } else {
+            return function (event, fn) {
+                return this.each(function (element) {
+                    element['on' + event] = null;
+                });
+            };
+        }
+    })();
 
     var blossom = {
         get: function (selector) {
