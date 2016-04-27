@@ -17,6 +17,44 @@ window.blossom = function () {
         this.length = elements.length;
     }
 
+    function makeXhrRequest(type, url, data) {
+        var xhr = window.XMLHttpRequest || ActiveXObject,
+            request = new xhr(), ixhr = {};
+
+        function success () {
+            return arguments[0];
+        }
+        function failure () {
+            return arguments[0];
+        }
+
+        ixhr = {
+            success: function (cb) {
+                success = cb;
+                return ixhr;
+            },
+            failure: function(cb) {
+                failure = cb;
+                return ixhr;
+            }
+        };
+
+        request.open(type, url);
+        request.onreadystatechange = function() {
+            var req;
+            if(request.readyState === 4) {
+                req = request.responseText;
+                if(request.status >= 200 && request.status < 300) {
+                    success(req);
+                } else {
+                    failure(req);
+                }
+            }
+        };
+        request.send(data);
+        return ixhr;
+    }
+
     Blossom.prototype.each = function (callback) {
         this.map(callback);
         return this;
@@ -232,6 +270,22 @@ window.blossom = function () {
             }
             return element;
         }
+    };
+
+    blossom.$post = function(url, data) {
+        return makeRequest('POST', url, data);
+    };
+
+    blossom.$put = function(url, data) {
+        return makeRequest('PUT', url, data);
+    };
+
+    blossom.$get = function(url) {
+        return makeRequest('GET', url);
+    };
+
+    blossom.$delete = function(url) {
+        return makeRequest('DELETE', url);
     };
 
     return blossom;
